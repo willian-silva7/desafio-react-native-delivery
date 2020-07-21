@@ -73,6 +73,9 @@ const FoodDetails: React.FC = () => {
 
   useEffect(() => {
     async function loadFood(): Promise<void> {
+      const response = await api.get(`/foods/${routeParams.id}`);
+
+      setFood(response.data);
       // Load a specific food with extras based on routeParams id
     }
 
@@ -80,30 +83,74 @@ const FoodDetails: React.FC = () => {
   }, [routeParams]);
 
   function handleIncrementExtra(id: number): void {
+    const extraIncrement = extras.map(extra =>
+      extra.id === id ? { ...extra, quantity: extra.quantity + 1 } : extra,
+    );
+
+    setExtras([...extraIncrement]);
     // Increment extra quantity
   }
 
   function handleDecrementExtra(id: number): void {
+    const extraIncrement = extras.map(extra =>
+      extra.id === id && extra.quantity >= 1
+        ? { ...extra, quantity: extra.quantity - 1 }
+        : extra,
+    );
+
+    setExtras([...extraIncrement]);
     // Decrement extra quantity
   }
 
   function handleIncrementFood(): void {
+    setFoodQuantity(quantity => quantity + 1);
     // Increment food quantity
   }
 
   function handleDecrementFood(): void {
+    setFoodQuantity(quantity => (quantity > 1 ? quantity - 1 : quantity));
+
     // Decrement food quantity
   }
 
-  const toggleFavorite = useCallback(() => {
+  const toggleFavorite = useCallback(async () => {
+    if (isFavorite) {
+      await api.delete(`/favorites/${food.id}`);
+    } else {
+      const newFood = { ...food };
+      delete newFood.formattedPrice;
+      delete newFood.extras;
+
+      await api.post('/favorites', newFood);
+    }
+    setIsFavorite(quantity => !quantity);
     // Toggle if food is favorite or not
   }, [isFavorite, food]);
 
   const cartTotal = useMemo(() => {
     // Calculate cartTotal
+    const price = extras.reduce(
+      (sum, extra) => sum + extra.value * extra.quantity,
+      0,
+    );
+
+    const totalPrice = (price + food.price) * foodQuantity;
+
+    return totalPrice;
   }, [extras, food, foodQuantity]);
 
   async function handleFinishOrder(): Promise<void> {
+    const order = {
+      ...food,
+      product_id: food.id,
+      formattedPrice: cartTotal,
+      name: food.name,
+      extras: { ...food.extras },
+      'food-quantity': foodQuantity,
+    };
+
+    await api.post('/order', order);
+
     // Finish the order and save on the API
   }
 
@@ -145,7 +192,9 @@ const FoodDetails: React.FC = () => {
             <FoodContent>
               <FoodTitle>{food.name}</FoodTitle>
               <FoodDescription>{food.description}</FoodDescription>
-              <FoodPricing>{food.formattedPrice}</FoodPricing>
+              <FoodPricing>
+                {formatValue(parseFloat(food.formattedPrice))}
+              </FoodPricing>
             </FoodContent>
           </Food>
         </FoodsContainer>
