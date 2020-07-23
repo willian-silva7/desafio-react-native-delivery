@@ -62,7 +62,9 @@ const Favorites: React.FC = () => {
               <FoodContent>
                 <FoodTitle>{item.name}</FoodTitle>
                 <FoodDescription>{item.description}</FoodDescription>
-                <FoodPricing>{formatValue(item.formattedPrice)}</FoodPricing>
+                <FoodPricing>
+                  {formatValue(parseFloat(item.formattedPrice))}
+                </FoodPricing>
               </FoodContent>
             </Food>
           )}

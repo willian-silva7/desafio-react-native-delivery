@@ -108,6 +108,12 @@ const FoodDetails: React.FC = () => {
   }
 
   function handleDecrementFood(): void {
+    // if (foodQuantity === 0 || foodQuantity === 1) {
+    //   return;
+    // }
+    // if (foodQuantity > 1) {
+    //   setFoodQuantity(quantity => quantity - 1);
+    // }
     setFoodQuantity(quantity => (quantity > 1 ? quantity - 1 : quantity));
 
     // Decrement food quantity
@@ -228,7 +234,9 @@ const FoodDetails: React.FC = () => {
         <TotalContainer>
           <Title>Total do pedido</Title>
           <PriceButtonContainer>
-            <TotalPrice testID="cart-total">{cartTotal}</TotalPrice>
+            <TotalPrice testID="cart-total">
+              {formatValue(cartTotal)}
+            </TotalPrice>
             <QuantityContainer>
               <Icon
                 size={15}
